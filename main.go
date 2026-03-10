@@ -4,7 +4,8 @@
 // detecting whether this process was spawned as the background updater child.
 //
 // When the user runs `mahin update`, the parent process spawns a child with:
-//   mahin --internal-updater <execPath> <binaryURL> <checksumURL> <assetName> <newVersion>
+//
+//	mahin --internal-updater <execPath> <binaryURL> <checksumURL> <assetName> <newVersion>
 //
 // We intercept that flag HERE, before cobra sees os.Args, because cobra would
 // reject an unknown flag and exit with an error.

@@ -25,17 +25,17 @@ If a newer version is found:
      binary is not locked when it gets overwritten)
   5. Temporary files are cleaned up`,
 	Run: func(cmd *cobra.Command, args []string) {
-    result, err := updater.Run()
-    if err != nil {
-        fmt.Fprintf(os.Stderr, "❌ Update failed: %v\n", err)
-        os.Exit(1)
-    }
+		result, err := updater.Run()
+		if err != nil {
+			fmt.Fprintf(os.Stderr, "❌ Update failed: %v\n", err)
+			os.Exit(1)
+		}
 
-    if result.AlreadyLatest {
-        fmt.Println("✔ Already running the latest version")
-        return
-    }
+		if result.AlreadyLatest {
+			fmt.Println("✔ Already running the latest version")
+			return
+		}
 
-    fmt.Printf("\n✨ Updated %s → %s\n", result.PreviousVersion, result.UpdatedTo)
-},
+		fmt.Printf("\n✨ Updated %s → %s\n", result.PreviousVersion, result.UpdatedTo)
+	},
 }
