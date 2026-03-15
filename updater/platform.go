@@ -1,3 +1,4 @@
+//Ab
 // platform.go — detects the current OS and CPU architecture at runtime.
 // Only job: figure out which release asset to download for this machine.
 package updater
