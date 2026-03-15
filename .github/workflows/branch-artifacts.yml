@@ -5,7 +5,7 @@ on:
     branches:
       - main
     paths-ignore:
-      - dist/**
+      - "dist/**"
   workflow_dispatch:
 
 permissions:
@@ -13,7 +13,6 @@ permissions:
 
 jobs:
   build-branch-artifacts:
-    if: github.actor != 'github-actions[bot]'
     runs-on: ubuntu-latest
 
     steps:
@@ -32,12 +31,7 @@ jobs:
         run: |
           set -euo pipefail
 
-          latest_tag="$(curl -fsSL "https://api.github.com/repos/${GITHUB_REPOSITORY}/releases/latest" | python3 -c 'import json, sys
-try:
-    data = json.load(sys.stdin)
-    print(data.get("tag_name", ""))
-except Exception:
-    print("")')"
+          latest_tag="$(git tag --list 'v*' --sort=-version:refname | head -n 1)"
 
           if [[ -n "$latest_tag" ]]; then
             branch_version="${latest_tag}-main"
