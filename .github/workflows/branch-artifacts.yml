@@ -1,0 +1,102 @@
+name: Branch Artifacts
+
+on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - dist/**
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-branch-artifacts:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+
+      - name: Build branch artifacts
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          latest_tag="$(curl -fsSL "https://api.github.com/repos/${GITHUB_REPOSITORY}/releases/latest" | python3 -c 'import json, sys
+try:
+    data = json.load(sys.stdin)
+    print(data.get("tag_name", ""))
+except Exception:
+    print("")')"
+
+          if [[ -n "$latest_tag" ]]; then
+            branch_version="${latest_tag}-main"
+          else
+            branch_version="v0.0.0-main"
+          fi
+
+          build_date="$(date -u +%Y-%m-%d)"
+          commit_short="${GITHUB_SHA::7}"
+
+          rm -rf dist
+          mkdir -p dist
+
+          for target in \
+            "darwin amd64" \
+            "darwin arm64" \
+            "linux amd64" \
+            "linux arm64" \
+            "windows amd64"
+          do
+            read -r goos goarch <<< "$target"
+            ext=""
+            if [[ "$goos" == "windows" ]]; then
+              ext=".exe"
+            fi
+
+            out="dist/mahin-${goos}-${goarch}${ext}"
+
+            GOOS="$goos" GOARCH="$goarch" \
+              go build \
+                -ldflags "-X github.com/mahin/mahin-cli-v1/version.Version=${branch_version} -X github.com/mahin/mahin-cli-v1/version.Commit=${commit_short} -X github.com/mahin/mahin-cli-v1/version.BuildDate=${build_date}" \
+                -o "$out" .
+
+            sha256sum "$out" > "${out}.sha256"
+          done
+
+          cat > dist/main.json <<EOF
+          {
+            "branch": "main",
+            "version": "${branch_version}",
+            "commit": "${commit_short}",
+            "build_date": "${build_date}"
+          }
+          EOF
+
+      - name: Commit branch artifacts
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+
+          git add dist
+
+          if git diff --cached --quiet; then
+            echo "No artifact changes to commit"
+            exit 0
+          fi
+
+          git commit -m "ci: update branch artifacts [skip ci]"
+          git push

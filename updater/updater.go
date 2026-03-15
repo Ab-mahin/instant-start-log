@@ -3,6 +3,7 @@ package updater
 import (
 	"crypto/sha256"
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"io"
 	"net/http"
@@ -13,6 +14,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/mahin/mahin-cli-v1/config"
 	"github.com/mahin/mahin-cli-v1/version"
 )
 
@@ -24,17 +26,28 @@ const (
 )
 
 type childArgs struct {
-	execPath    string
-	binaryURL   string
-	checksumURL string
-	assetName   string
-	newVersion  string
+	execPath     string
+	binaryURL    string
+	checksumURL  string
+	assetName    string
+	expectVer    string
+	expectCommit string
+	updateLabel  string
 }
 
 type Result struct {
 	AlreadyLatest   bool
 	PreviousVersion string
 	UpdatedTo       string
+}
+
+type updateCandidate struct {
+	binaryURL    string
+	checksumURL  string
+	assetName    string
+	expectVer    string
+	expectCommit string
+	updateLabel  string
 }
 
 func Run() (*Result, error) {
@@ -49,6 +62,7 @@ func Run() (*Result, error) {
 	fmt.Printf("📍 Current binary  : %s\n", execPath)
 
 	currentVersion := version.Short()
+	currentCommit := version.Commit
 	fmt.Printf("📦 Current version : %s\n", currentVersion)
 
 	currentSemver, err := parseSemver(currentVersion)
@@ -56,42 +70,28 @@ func Run() (*Result, error) {
 		return nil, fmt.Errorf("invalid current version %q: %w", currentVersion, err)
 	}
 
-	fmt.Println("🔍 Checking for updates...")
-	rel, err := fetchLatestRelease()
-	if err != nil {
-		return nil, fmt.Errorf("failed to fetch release info: %w", err)
-	}
-	fmt.Printf("🏷️  Latest release  : %s\n", rel.TagName)
-
-	latestSemver, err := parseSemver(rel.TagName)
-	if err != nil {
-		return nil, fmt.Errorf("invalid remote version %q: %w", rel.TagName, err)
-	}
-	if !isNewer(currentSemver, latestSemver) {
-		fmt.Println("✅ Already up to date!")
-		return &Result{AlreadyLatest: true, PreviousVersion: currentVersion}, nil
-	}
-	fmt.Printf("🆕 New version      : %s → %s\n", currentVersion, rel.TagName)
-
 	plat := detect()
 	fmt.Printf("🖥️  Platform         : %s/%s\n", plat.OS, plat.Arch)
 
-	binaryURL, checksumURL, err := findAssetURLs(
-		rel.Assets,
-		plat.binaryAssetName(),
-		plat.checksumAssetName(),
-	)
+	fmt.Println("🔍 Checking for updates...")
+	candidate, err := resolveUpdateCandidate(currentVersion, currentCommit, currentSemver, plat)
 	if err != nil {
 		return nil, err
+	}
+	if candidate == nil {
+		fmt.Println("✅ Already up to date!")
+		return &Result{AlreadyLatest: true, PreviousVersion: currentVersion}, nil
 	}
 
 	fmt.Println("🚀 Launching updater process...")
 	args := childArgs{
-		execPath:    execPath,
-		binaryURL:   binaryURL,
-		checksumURL: checksumURL,
-		assetName:   plat.binaryAssetName(),
-		newVersion:  rel.TagName,
+		execPath:     execPath,
+		binaryURL:    candidate.binaryURL,
+		checksumURL:  candidate.checksumURL,
+		assetName:    candidate.assetName,
+		expectVer:    candidate.expectVer,
+		expectCommit: candidate.expectCommit,
+		updateLabel:  candidate.updateLabel,
 	}
 	if err := spawnChild(args); err != nil {
 		return nil, fmt.Errorf("failed to launch updater process: %w", err)
@@ -100,7 +100,7 @@ func Run() (*Result, error) {
 	fmt.Println("⏳ Updater is running in the background...")
 	os.Exit(0)
 
-	return &Result{PreviousVersion: currentVersion, UpdatedTo: rel.TagName}, nil
+	return &Result{PreviousVersion: currentVersion, UpdatedTo: candidate.updateLabel}, nil
 }
 
 func spawnChild(args childArgs) error {
@@ -115,7 +115,9 @@ func spawnChild(args childArgs) error {
 		args.binaryURL,
 		args.checksumURL,
 		args.assetName,
-		args.newVersion,
+		args.expectVer,
+		args.expectCommit,
+		args.updateLabel,
 	)
 
 	cmd.Stdout = os.Stdout
@@ -125,7 +127,7 @@ func spawnChild(args childArgs) error {
 }
 
 func RunChild(args []string) {
-	if len(args) < 5 {
+	if len(args) < 7 {
 		fmt.Fprintln(os.Stderr, "❌ Internal updater: wrong number of arguments")
 		os.Exit(1)
 	}
@@ -134,15 +136,137 @@ func RunChild(args []string) {
 	binaryURL := args[1]
 	checksumURL := args[2]
 	assetName := args[3]
-	newVersion := args[4]
+	expectVer := args[4]
+	expectCommit := args[5]
+	updateLabel := args[6]
 
 	fmt.Println("⏳ Waiting for parent process to exit...")
 	time.Sleep(500 * time.Millisecond)
 
-	if err := runChildUpdate(execPath, binaryURL, checksumURL, assetName, newVersion); err != nil {
+	if err := runChildUpdate(execPath, binaryURL, checksumURL, assetName, expectVer, expectCommit, updateLabel); err != nil {
 		fmt.Fprintf(os.Stderr, "❌ Update failed: %v\n", err)
 		os.Exit(1)
 	}
+}
+
+func resolveUpdateCandidate(currentVersion, currentCommit string, currentSemver semver, plat platform) (*updateCandidate, error) {
+	rel, err := fetchLatestRelease()
+	if err != nil && !errors.Is(err, errReleaseNotFound) {
+		return nil, fmt.Errorf("failed to fetch release info: %w", err)
+	}
+
+	if rel != nil {
+		fmt.Printf("🏷️  Latest release  : %s\n", rel.TagName)
+
+		latestSemver, err := parseSemver(rel.TagName)
+		if err != nil {
+			return nil, fmt.Errorf("invalid remote version %q: %w", rel.TagName, err)
+		}
+
+		if isNewer(currentSemver, latestSemver) {
+			fmt.Printf("🆕 New release      : %s → %s\n", currentVersion, rel.TagName)
+
+			binaryURL, checksumURL, err := findAssetURLs(
+				rel.Assets,
+				plat.binaryAssetName(),
+				plat.checksumAssetName(),
+			)
+			if err != nil {
+				return nil, err
+			}
+
+			return &updateCandidate{
+				binaryURL:   binaryURL,
+				checksumURL: checksumURL,
+				assetName:   plat.binaryAssetName(),
+				expectVer:   rel.TagName,
+				updateLabel: rel.TagName,
+			}, nil
+		}
+	} else {
+		fmt.Println("ℹ️  No published release found; checking branch artifacts...")
+	}
+
+	return resolveBranchCandidate(currentVersion, currentCommit, currentSemver, plat)
+}
+
+func resolveBranchCandidate(currentVersion, currentCommit string, currentSemver semver, plat platform) (*updateCandidate, error) {
+	meta, err := fetchBranchMetadata(config.GitHubBranch)
+	if err != nil {
+		return nil, fmt.Errorf("failed to fetch %s branch metadata: %w", config.GitHubBranch, err)
+	}
+	if meta == nil {
+		return nil, nil
+	}
+
+	branchCommit := shortCommit(meta.Commit)
+	branchSemver, err := parseSemver(meta.Version)
+	if err != nil {
+		return nil, fmt.Errorf("invalid branch version %q: %w", meta.Version, err)
+	}
+	fmt.Printf("🌿 Branch artifact  : %s (%s)\n", meta.Version, branchCommit)
+
+	if isNewer(currentSemver, branchSemver) {
+		return nil, nil
+	}
+
+	if sameCommit(currentCommit, branchCommit) && currentVersion == meta.Version {
+		return nil, nil
+	}
+
+	assetName := plat.binaryAssetName()
+	binaryPath := filepath.ToSlash(filepath.Join("dist", assetName))
+	checksumPath := filepath.ToSlash(filepath.Join("dist", assetName+".sha256"))
+	binaryURL := rawGitHubURL(config.GitHubBranch, binaryPath)
+	checksumURL := rawGitHubURL(config.GitHubBranch, checksumPath)
+
+	ok, err := remoteFileExists(binaryURL)
+	if err != nil {
+		return nil, err
+	}
+	if !ok {
+		return nil, nil
+	}
+
+	checksumExists, err := remoteFileExists(checksumURL)
+	if err != nil {
+		return nil, err
+	}
+	if !checksumExists {
+		checksumURL = ""
+	}
+
+	currentLabel := currentCommit
+	if currentLabel == "" || currentLabel == "none" {
+		currentLabel = currentVersion
+	}
+	fmt.Printf("🆕 New branch build : %s → %s\n", currentLabel, branchCommit)
+
+	return &updateCandidate{
+		binaryURL:    binaryURL,
+		checksumURL:  checksumURL,
+		assetName:    assetName,
+		expectVer:    meta.Version,
+		expectCommit: branchCommit,
+		updateLabel:  fmt.Sprintf("%s (%s)", meta.Version, branchCommit),
+	}, nil
+}
+
+func shortCommit(commit string) string {
+	commit = strings.TrimSpace(commit)
+	if len(commit) > 7 {
+		return commit[:7]
+	}
+	return commit
+}
+
+func sameCommit(left, right string) bool {
+	left = strings.TrimSpace(left)
+	right = strings.TrimSpace(right)
+	if left == "" || right == "" || left == "none" || right == "none" {
+		return false
+	}
+	return strings.HasPrefix(left, right) || strings.HasPrefix(right, left)
 }
 
 func validateURL(raw string) error {
@@ -240,7 +364,7 @@ func verifyChecksum(binaryFile, checksumFile string) error {
 	return nil
 }
 
-func verifyBinary(binaryPath, expectedVersion string) error {
+func verifyBinary(binaryPath, expectedVersion, expectedCommit string) error {
 	cmd := exec.Command(binaryPath, "version")
 
 	output, err := cmd.CombinedOutput()
@@ -251,6 +375,9 @@ func verifyBinary(binaryPath, expectedVersion string) error {
 	out := strings.TrimSpace(string(output))
 	if !strings.Contains(out, expectedVersion) {
 		return fmt.Errorf("version mismatch\nexpected: %s\nbinary reported: %s", expectedVersion, out)
+	}
+	if expectedCommit != "" && !strings.Contains(out, expectedCommit) {
+		return fmt.Errorf("commit mismatch\nexpected: %s\nbinary reported: %s", expectedCommit, out)
 	}
 
 	return nil
@@ -279,7 +406,7 @@ func replaceExecutable(execPath, newBinary string) error {
 	return fmt.Errorf("unable to replace executable after retries")
 }
 
-func runChildUpdate(execPath, binaryURL, checksumURL, assetName, newVersion string) error {
+func runChildUpdate(execPath, binaryURL, checksumURL, assetName, expectedVersion, expectedCommit, updateLabel string) error {
 	baseDir := filepath.Dir(execPath)
 
 	tmpDir, err := os.MkdirTemp(baseDir, "mahin-update-*")
@@ -329,7 +456,7 @@ func runChildUpdate(execPath, binaryURL, checksumURL, assetName, newVersion stri
 	}
 
 	fmt.Println("🔬 Verifying binary...")
-	if err := verifyBinary(newBinaryPath, newVersion); err != nil {
+	if err := verifyBinary(newBinaryPath, expectedVersion, expectedCommit); err != nil {
 		return fmt.Errorf("binary verification failed: %w", err)
 	}
 
@@ -338,7 +465,7 @@ func runChildUpdate(execPath, binaryURL, checksumURL, assetName, newVersion stri
 		return fmt.Errorf("installation failed: %w", err)
 	}
 
-	fmt.Printf("\n🎉 Updated successfully to %s\n", newVersion)
+	fmt.Printf("\n🎉 Updated successfully to %s\n", updateLabel)
 
 	return nil
 }
@@ -347,6 +474,9 @@ type semver struct{ major, minor, patch int }
 
 func parseSemver(v string) (semver, error) {
 	v = strings.TrimPrefix(v, "v")
+	if idx := strings.IndexAny(v, "-+"); idx != -1 {
+		v = v[:idx]
+	}
 	var s semver
 	_, err := fmt.Sscanf(v, "%d.%d.%d", &s.major, &s.minor, &s.patch)
 	if err != nil {

@@ -11,6 +11,13 @@ const (
 	// GitHubRepo is the name of the repository that publishes releases.
 	GitHubRepo = "mahin-cli-v1"
 
+	// GitHubBranch is the branch used for branch-tracking self-update fallback.
+	GitHubBranch = "main"
+
+	// BranchMetadataPath points to the JSON metadata file committed with
+	// branch-tracked artifacts under the repository root.
+	BranchMetadataPath = "dist/main.json"
+
 	// BinaryName is the base name used when naming release assets.
 	// Release assets must follow: <BinaryName>-<os>-<arch>[.exe]
 	// e.g.  mahin-linux-amd64
