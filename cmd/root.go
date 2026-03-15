@@ -12,15 +12,16 @@ import (
 var rootCmd = &cobra.Command{
 	Use:   "mahin",
 	Short: "mahin-cli-v1 — a self-updating CLI",
-	Long: `mahin-cli-v1 is a CLI that can update itself from GitHub Releases,
-detecting your OS and CPU architecture automatically.`,
+	Long: `mahin-cli-v1 is a small CLI with hello, version, and self-update.
+
+self-update pulls the latest files from the cloned git repository
+using git pull --ff-only.`,
 }
 
 func init() {
 	// Keep the CLI surface focused on project commands only.
 	rootCmd.CompletionOptions.DisableDefaultCmd = true
-	rootCmd.SetHelpCommand(&cobra.Command{Use: "no-help", Hidden: true})
-	rootCmd.AddCommand(helloCmd, versionCmd, updateCmd)
+	rootCmd.AddCommand(helloCmd, versionCmd, selfUpdateCmd)
 }
 
 // Execute is called by main.go. It is the single public entry point.
