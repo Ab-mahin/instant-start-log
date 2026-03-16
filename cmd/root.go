@@ -21,7 +21,7 @@ using git pull --ff-only.`,
 func init() {
 	// Keep the CLI surface focused on project commands only.
 	rootCmd.CompletionOptions.DisableDefaultCmd = true
-	rootCmd.AddCommand(helloCmd, versionCmd, selfUpdateCmd)
+	rootCmd.AddCommand(helloCmd, versionCmd, selfUpdateCmd, movieCmd)
 }
 
 // Execute is called by main.go. It is the single public entry point.
