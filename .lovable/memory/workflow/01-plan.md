@@ -35,25 +35,25 @@
 ### Documentation
 - [x] README.md (basic)
 - [x] SPEC.md (comprehensive — 350+ lines)
-- [x] readm.txt milestone marker
+- [x] readm.txt milestone marker (updated 17-Mar-2026 09:45 PM MYT)
 - [x] .lovable/memory structure
 
 ## 🔲 Pending / Not Started
 
 ### Known Bugs
-- [ ] `move-log.json` timestamp hardcoded as `"now"` instead of actual time
+- [ ] `move-log.json` timestamp hardcoded as `"now"` instead of actual time (see issues/01-timestamp-bug.md)
 - [ ] No confirmation prompt on `movie undo` before reverting
 
 ### Missing Features
 - [ ] `movie tag` command — tags table exists but no commands use it
 - [ ] `DiscoverByGenre` TMDb method exists but unused by any command
 - [ ] JSON metadata files per movie/TV show (directories exist, not written)
-- [ ] `.gitignore` file — needs to ignore binaries and `movie-cli-output/`
+- [ ] `.gitignore` file — attempted but could not be created in Lovable environment (must create manually)
 
 ### Refactoring Needed
-- [ ] `cmd/movie_move.go` — 348 lines, should split into smaller files
-- [ ] `db/sqlite.go` — 452 lines, should split (e.g., separate queries from schema)
-- [ ] Duplicate TMDb fetch logic in `scan`, `search`, `info` — should extract shared function
+- [ ] `cmd/movie_move.go` — 348 lines, should split into smaller files (see issues/03-large-files.md)
+- [ ] `db/sqlite.go` — 452 lines, should split (see issues/03-large-files.md)
+- [ ] Duplicate TMDb fetch logic in `scan`, `search`, `info` — should extract shared function (see issues/02-duplicate-tmdb-fetch.md)
 
 ### Enhancements
 - [ ] Cross-drive move support (`os.Rename` fails across filesystems — need copy+delete)

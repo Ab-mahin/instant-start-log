@@ -2,7 +2,8 @@
 
 > **Status**: Open  
 > **Severity**: Medium  
-> **File**: `cmd/movie_move.go`, line 345-346
+> **File**: `cmd/movie_move.go`, lines 345-346  
+> **Iteration**: 0 (not yet fixed)
 
 ## Root Cause
 
@@ -22,7 +23,7 @@ entry := fmt.Sprintf(`{"from":"%s","to":"%s","timestamp":"%s"}`+"\n",
     from, to, time.Now().Format(time.RFC3339))
 ```
 
-Also need to add `"time"` to the imports.
+Also need to add `"time"` to the imports at line 4-16.
 
 ## Impact
 
