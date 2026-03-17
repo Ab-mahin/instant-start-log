@@ -40,23 +40,9 @@ func runMovieInfo(cmd *cobra.Command, args []string) {
 
 	query := strings.Join(args, " ")
 
-	// 1) If numeric ID, look up directly
-	if id, err := strconv.ParseInt(query, 10, 64); err == nil {
-		m, err := database.GetMediaByID(id)
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "❌ No media found with ID %d.\n", id)
-			fmt.Fprintln(os.Stderr, "   Use 'mahin movie ls' to see your library.")
-			os.Exit(1)
-		}
-		printMediaDetail(m)
-		return
-	}
-
-	// 2) Title query — search local DB first
-	results, err := database.SearchMedia(query)
-	if err == nil && len(results) > 0 {
-		// Try exact match first, then prefix, then first result
-		m := pickBestMatch(results, query)
+	// 1) Try local DB first (by ID or title)
+	m, err := resolveMediaByQuery(database, query)
+	if err == nil {
 		fmt.Println("📚 Found in local library:")
 		fmt.Println()
 		printMediaDetail(m)
