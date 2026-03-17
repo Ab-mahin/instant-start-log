@@ -172,13 +172,13 @@ func runMovieScan(cmd *cobra.Command, args []string) {
 				m.Description = best.Overview
 				m.Genre = tmdb.GenreNames(best.GenreIDs)
 
-			if best.MediaType == "movie" || best.MediaType == "" {
-				m.Type = "movie"
-				fetchMovieDetails(client, best.ID, m)
-			} else if best.MediaType == "tv" {
-				m.Type = "tv"
-				fetchTVDetails(client, best.ID, m)
-			}
+				if best.MediaType == "movie" || best.MediaType == "" {
+					m.Type = "movie"
+					fetchMovieDetails(client, best.ID, m)
+				} else if best.MediaType == "tv" {
+					m.Type = "tv"
+					fetchTVDetails(client, best.ID, m)
+				}
 
 				// Download thumbnail
 				if best.PosterPath != "" {

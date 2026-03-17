@@ -40,23 +40,9 @@ func runMovieInfo(cmd *cobra.Command, args []string) {
 
 	query := strings.Join(args, " ")
 
-	// 1) If numeric ID, look up directly
-	if id, err := strconv.ParseInt(query, 10, 64); err == nil {
-		m, err := database.GetMediaByID(id)
-		if err != nil {
-			fmt.Fprintf(os.Stderr, "❌ No media found with ID %d.\n", id)
-			fmt.Fprintln(os.Stderr, "   Use 'mahin movie ls' to see your library.")
-			os.Exit(1)
-		}
-		printMediaDetail(m)
-		return
-	}
-
-	// 2) Title query — search local DB first
-	results, err := database.SearchMedia(query)
-	if err == nil && len(results) > 0 {
-		// Try exact match first, then prefix, then first result
-		m := pickBestMatch(results, query)
+	// 1) Try local DB first (by ID or title)
+	m, err := resolveMediaByQuery(database, query)
+	if err == nil {
 		fmt.Println("📚 Found in local library:")
 		fmt.Println()
 		printMediaDetail(m)
@@ -156,44 +142,9 @@ func runMovieInfo(cmd *cobra.Command, args []string) {
 	fmt.Println()
 	fmt.Println("✅ Saved to your library!")
 	fmt.Println()
-	printMediaDetail(&db.Media{
-		Title:       m.Title,
-		CleanTitle:  m.CleanTitle,
-		Year:        m.Year,
-		Type:        m.Type,
-		TmdbID:      m.TmdbID,
-		ImdbID:      m.ImdbID,
-		TmdbRating:  m.TmdbRating,
-		Popularity:  m.Popularity,
-		Genre:       m.Genre,
-		Director:    m.Director,
-		CastList:    m.CastList,
-		Description: m.Description,
-		ThumbnailPath: m.ThumbnailPath,
-	})
+	printMediaDetail(m)
 }
 
-// pickBestMatch finds the best match from search results.
-func pickBestMatch(results []db.Media, query string) *db.Media {
-	queryLower := strings.ToLower(strings.TrimSpace(query))
-
-	// Exact match
-	for _, m := range results {
-		if strings.EqualFold(m.CleanTitle, query) || strings.EqualFold(m.Title, query) {
-			return &m
-		}
-	}
-	// Prefix match
-	for _, m := range results {
-		if strings.HasPrefix(strings.ToLower(m.CleanTitle), queryLower) ||
-			strings.HasPrefix(strings.ToLower(m.Title), queryLower) {
-			return &m
-		}
-	}
-	// Fallback to first
-	first := results[0]
-	return &first
-}
 
 // fetchMovieDetails populates a Media record with TMDb movie details + credits.
 func fetchMovieDetails(client *tmdb.Client, tmdbID int, m *db.Media) {
