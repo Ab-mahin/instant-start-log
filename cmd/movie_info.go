@@ -145,27 +145,6 @@ func runMovieInfo(cmd *cobra.Command, args []string) {
 	printMediaDetail(m)
 }
 
-// pickBestMatch finds the best match from search results.
-func pickBestMatch(results []db.Media, query string) *db.Media {
-	queryLower := strings.ToLower(strings.TrimSpace(query))
-
-	// Exact match
-	for _, m := range results {
-		if strings.EqualFold(m.CleanTitle, query) || strings.EqualFold(m.Title, query) {
-			return &m
-		}
-	}
-	// Prefix match
-	for _, m := range results {
-		if strings.HasPrefix(strings.ToLower(m.CleanTitle), queryLower) ||
-			strings.HasPrefix(strings.ToLower(m.Title), queryLower) {
-			return &m
-		}
-	}
-	// Fallback to first
-	first := results[0]
-	return &first
-}
 
 // fetchMovieDetails populates a Media record with TMDb movie details + credits.
 func fetchMovieDetails(client *tmdb.Client, tmdbID int, m *db.Media) {
