@@ -253,6 +253,26 @@ func (d *DB) GetMediaByID(id int64) (*Media, error) {
 	return m, nil
 }
 
+// GetMediaByTmdbID returns a media record by its TMDb ID.
+func (d *DB) GetMediaByTmdbID(tmdbID int) (*Media, error) {
+	row := d.QueryRow(`
+		SELECT id, title, clean_title, year, type, tmdb_id, imdb_id,
+			description, imdb_rating, tmdb_rating, popularity, genre,
+			director, cast_list, thumbnail_path, original_file_name,
+			original_file_path, current_file_path, file_extension, file_size
+		FROM media WHERE tmdb_id = ?`, tmdbID)
+	m := &Media{}
+	err := row.Scan(&m.ID, &m.Title, &m.CleanTitle, &m.Year, &m.Type,
+		&m.TmdbID, &m.ImdbID, &m.Description, &m.ImdbRating, &m.TmdbRating,
+		&m.Popularity, &m.Genre, &m.Director, &m.CastList, &m.ThumbnailPath,
+		&m.OriginalFileName, &m.OriginalFilePath, &m.CurrentFilePath,
+		&m.FileExtension, &m.FileSize)
+	if err != nil {
+		return nil, err
+	}
+	return m, nil
+}
+
 // CountMedia returns total count, optionally filtered by type.
 func (d *DB) CountMedia(mediaType string) (int, error) {
 	var count int
