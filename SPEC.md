@@ -587,10 +587,10 @@ bytes < 1 KB  → "X B"
 Appended to `~/movie-cli-output/json/history/<slug>/move-log.json`:
 
 ```json
-{"from":"/path/from","to":"/path/to","timestamp":"now"}
+{"from":"/path/from","to":"/path/to","timestamp":"2026-03-17T21:45:00+08:00"}
 ```
 
-**Known issue**: Timestamp is hardcoded as `"now"` string instead of actual timestamp.
+Timestamps use `time.Now().Format(time.RFC3339)`. See `spec/02-app/issues/01-hardcoded-timestamp.md` for the fix history.
 
 ## Appendix C: TV Director Handling
 
