@@ -1,35 +1,24 @@
 # Issue: Hardcoded Timestamp in move-log.json
 
-> **Status**: Open  
+> **Status**: ✅ Resolved  
 > **Severity**: Medium  
-> **File**: `cmd/movie_move.go`, lines 345-346  
-> **Iteration**: 0 (not yet fixed)
+> **File**: `cmd/movie_move_helpers.go` (was `cmd/movie_move.go` line 345-346)  
+> **Iteration**: 1 (fixed 17-Mar-2026)
 
 ## Root Cause
 
-The `saveHistoryLog` function writes `"timestamp":"now"` as a literal string instead of an actual timestamp.
+The `saveHistoryLog` function wrote `"timestamp":"now"` as a literal string instead of an actual timestamp.
 
-```go
-entry := fmt.Sprintf(`{"from":"%s","to":"%s","timestamp":"%s"}`+"\n",
-    from, to, "now")  // ← hardcoded "now"
-```
+## Solution Applied
 
-## Solution
+Replaced `"now"` with `time.Now().Format(time.RFC3339)` and added `"time"` to imports.
+Function moved to `movie_move_helpers.go` during refactoring.
 
-Replace `"now"` with `time.Now().Format(time.RFC3339)`:
+## Impact (Before Fix)
 
-```go
-entry := fmt.Sprintf(`{"from":"%s","to":"%s","timestamp":"%s"}`+"\n",
-    from, to, time.Now().Format(time.RFC3339))
-```
-
-Also need to add `"time"` to the imports at line 4-16.
-
-## Impact
-
-- All move history JSON logs have useless timestamp data
-- Cannot reconstruct when moves happened from JSON logs
-- DB `move_history.moved_at` is correct (uses `CURRENT_TIMESTAMP`), so DB is unaffected
+- All move history JSON logs had useless timestamp data
+- Could not reconstruct when moves happened from JSON logs
+- DB `move_history.moved_at` was correct (uses `CURRENT_TIMESTAMP`), so DB was unaffected
 
 ## Learning
 

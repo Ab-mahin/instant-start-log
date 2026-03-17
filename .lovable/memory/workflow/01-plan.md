@@ -32,28 +32,31 @@
 - [x] SPEC.md — full project specification
 - [x] Shared resolver helper (`movie_resolve.go`)
 
+### Bug Fixes (17-Mar-2026)
+- [x] Fixed timestamp bug — `saveHistoryLog` now uses `time.Now().Format(time.RFC3339)` instead of `"now"`
+- [x] Deduplicated TMDb fetch logic — `scan` and `search` now use shared `fetchMovieDetails()`/`fetchTVDetails()` from `movie_info.go`
+
+### Refactoring (17-Mar-2026)
+- [x] Split `cmd/movie_move.go` (348 lines) → `movie_move.go` (178 lines) + `movie_move_helpers.go` (168 lines)
+- [x] Split `db/sqlite.go` (452 lines) → `db/db.go` + `db/media.go` + `db/config.go` + `db/history.go` + `db/helpers.go`
+
 ### Documentation
 - [x] README.md (basic)
 - [x] SPEC.md (comprehensive — 350+ lines)
 - [x] readm.txt milestone marker (updated 17-Mar-2026 09:45 PM MYT)
 - [x] .lovable/memory structure
+- [x] AI success rate plan (`workflow/01-ai-success-plan.md`)
 
 ## 🔲 Pending / Not Started
 
 ### Known Bugs
-- [ ] `move-log.json` timestamp hardcoded as `"now"` instead of actual time (see issues/01-timestamp-bug.md)
 - [ ] No confirmation prompt on `movie undo` before reverting
 
 ### Missing Features
 - [ ] `movie tag` command — tags table exists but no commands use it
 - [ ] `DiscoverByGenre` TMDb method exists but unused by any command
 - [ ] JSON metadata files per movie/TV show (directories exist, not written)
-- [ ] `.gitignore` file — attempted but could not be created in Lovable environment (must create manually)
-
-### Refactoring Needed
-- [ ] `cmd/movie_move.go` — 348 lines, should split into smaller files (see issues/03-large-files.md)
-- [ ] `db/sqlite.go` — 452 lines, should split (see issues/03-large-files.md)
-- [ ] Duplicate TMDb fetch logic in `scan`, `search`, `info` — should extract shared function (see issues/02-duplicate-tmdb-fetch.md)
+- [ ] `.gitignore` file — must be created manually (Lovable environment limitation)
 
 ### Enhancements
 - [ ] Cross-drive move support (`os.Rename` fails across filesystems — need copy+delete)

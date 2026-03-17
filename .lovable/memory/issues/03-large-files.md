@@ -1,32 +1,32 @@
 # Issue: Large Files Need Refactoring
 
-> **Status**: Open  
+> **Status**: ✅ Resolved  
 > **Severity**: Low (maintainability)  
-> **Files**: `cmd/movie_move.go` (348 lines), `db/sqlite.go` (452 lines)  
-> **Iteration**: 0 (not yet fixed)
+> **Files**: `cmd/movie_move.go` (was 348 lines), `db/sqlite.go` (was 452 lines)  
+> **Iteration**: 1 (fixed 17-Mar-2026)
 
 ## Root Cause
 
 Features were added incrementally without splitting files at natural boundaries.
 
-## Solution
+## Solution Applied
 
 ### `cmd/movie_move.go` → split into:
-- `movie_move.go` — command definition + `runMovieMove` main flow
-- `movie_move_helpers.go` — `promptSourceDirectory`, `promptDestination`, `promptCustomPath`, `listVideoFiles`, `humanSize`, `expandHome`, `saveHistoryLog`
+- `movie_move.go` (178 lines) — command definition + `runMovieMove` main flow
+- `movie_move_helpers.go` (168 lines) — `promptSourceDirectory`, `promptDestination`, `promptCustomPath`, `listVideoFiles`, `humanSize`, `expandHome`, `saveHistoryLog`
 
 ### `db/sqlite.go` → split into:
-- `db/db.go` — `DB` struct, `Open()`, `migrate()`
-- `db/media.go` — `Media` struct, Insert/Update/Get/List/Search/Count methods
+- `db/db.go` — `DB` struct, `Open()`, `migrate()` (schema + defaults)
+- `db/media.go` — `Media` struct, all CRUD methods, `scanMediaRows`, `TopGenres`
 - `db/config.go` — `GetConfig`, `SetConfig`
 - `db/history.go` — `MoveRecord`, `InsertMoveHistory`, `GetLastMove`, `MarkMoveUndone`, `InsertScanHistory`
-- `db/helpers.go` — `scanMediaRows`, `splitCSV`, `split`, `indexOf`, `trim`
+- `db/helpers.go` — `splitCSV`, `split`, `indexOf`, `trim`
 
-## Impact
+## Impact (Before Fix)
 
 - Harder to navigate and understand for new contributors/AI
 - Higher risk of merge conflicts
-- Lovable flags files >300 lines with refactoring warnings
+- AI lost context in large files, causing partial/broken edits
 
 ## Learning
 
