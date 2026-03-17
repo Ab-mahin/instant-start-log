@@ -1,28 +1,22 @@
 # Issue: Duplicate TMDb Fetch Logic
 
-> **Status**: Open  
+> **Status**: ✅ Resolved  
 > **Severity**: Low (code quality)  
 > **Files**: `cmd/movie_scan.go`, `cmd/movie_search.go`, `cmd/movie_info.go`  
-> **Iteration**: 0 (not yet fixed)
+> **Iteration**: 1 (fixed 17-Mar-2026)
 
 ## Root Cause
 
-Three commands (`scan`, `search`, `info`) each contain nearly identical code for:
-1. Fetching movie details + credits from TMDb
-2. Extracting directors, cast (top 10), genres
-3. Handling TV `Executive Producer` as director
-4. Downloading poster thumbnails
+Three commands (`scan`, `search`, `info`) each contained nearly identical code for fetching movie/TV details + credits from TMDb.
 
-`movie_info.go` has properly extracted helpers (`fetchMovieDetails`, `fetchTVDetails`) but `scan` and `search` don't use them.
+## Solution Applied
 
-## Solution
+Refactored `scan` and `search` to call the shared `fetchMovieDetails()` and `fetchTVDetails()` functions from `movie_info.go`. Reduced ~80 lines of duplicate code to 6 lines of function calls.
 
-Refactor `scan` and `search` to call the shared `fetchMovieDetails()` and `fetchTVDetails()` functions from `movie_info.go`. These are already package-level functions in the `cmd` package.
-
-## Impact
+## Impact (Before Fix)
 
 - ~80 lines of duplicate code across 3 files
-- Bug fixes must be applied in 3 places
+- Bug fixes had to be applied in 3 places
 - Risk of behavior divergence between commands
 
 ## Learning

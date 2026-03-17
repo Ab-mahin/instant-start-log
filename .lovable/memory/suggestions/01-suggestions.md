@@ -2,62 +2,34 @@
 
 > **Last Updated**: 17-Mar-2026
 
-## 🔴 High Priority
+## ✅ Completed Suggestions
 
-### 1. Fix timestamp bug in move-log.json
-- **Status**: Pending
-- **File**: `cmd/movie_move.go` line 345-346
-- **Issue**: `"timestamp":"now"` is a hardcoded string, not an actual timestamp
-- **Fix**: Replace `"now"` with `time.Now().Format(time.RFC3339)` and add `"time"` to imports
-- **See**: `issues/01-timestamp-bug.md`
+### 1. ~~Fix timestamp bug in move-log.json~~ ✅
+- **Completed**: 17-Mar-2026
+- **Fix**: Replaced `"now"` with `time.Now().Format(time.RFC3339)` in `cmd/movie_move_helpers.go`
 
-### 2. Add .gitignore
-- **Status**: Attempted — file is read-only in Lovable environment
-- **Action**: Must be created manually in local repo
-- **Content needed**:
-  ```
-  # Binaries
-  mahin
-  mahin.exe
-  mahin-darwin-*
-  mahin-cli-v1
-  *.exe
-  *.o
-  *.a
-  *.so
-  *.dylib
-  
-  # Build & Runtime
-  movie-cli-output/
-  
-  # OS/IDE
-  .DS_Store
-  Thumbs.db
-  .idea/
-  .vscode/
-  ```
+### 2. ~~Refactor large files~~ ✅
+- **Completed**: 17-Mar-2026
+- **Changes**:
+  - `cmd/movie_move.go` (348→178 lines) + new `cmd/movie_move_helpers.go` (168 lines)
+  - `db/sqlite.go` (452 lines) → `db/db.go` + `db/media.go` + `db/config.go` + `db/history.go` + `db/helpers.go`
 
-## 🟡 Medium Priority
+### 3. ~~Extract shared TMDb fetch logic~~ ✅
+- **Completed**: 17-Mar-2026
+- **Changes**: `movie_scan.go` and `movie_search.go` now call `fetchMovieDetails()`/`fetchTVDetails()` from `movie_info.go`
 
-### 3. Implement `movie tag` command
+## 🟡 Medium Priority (Pending)
+
+### 4. Add .gitignore
+- **Status**: Must create manually (Lovable limitation)
+- **Content**: See `01-suggestions.md` in completed folder for full content
+
+### 5. Implement `movie tag` command
 - **Status**: Pending
 - **Context**: `tags` table already exists in DB schema with `UNIQUE(media_id, tag)`
 - **Subcommands**: `tag add <id> <tag>`, `tag remove <id> <tag>`, `tag list [id]`
 
-### 4. Refactor large files
-- **Status**: Pending
-- **See**: `issues/03-large-files.md`
-- **Targets**:
-  - `cmd/movie_move.go` (348 lines) → split prompts/helpers into `cmd/movie_move_helpers.go`
-  - `db/sqlite.go` (452 lines) → split into `db/schema.go`, `db/media.go`, `db/config.go`, `db/history.go`
-
-### 5. Extract shared TMDb fetch logic
-- **Status**: Pending
-- **See**: `issues/02-duplicate-tmdb-fetch.md`
-- **Context**: `scan`, `search`, and `info` all have duplicate code for fetching movie/TV details + credits
-- **Solution**: Use `fetchMovieDetails()` and `fetchTVDetails()` from `movie_info.go` everywhere
-
-## 🟢 Low Priority
+## 🟢 Low Priority (Pending)
 
 ### 6. Add `movie undo` confirmation prompt
 - **Status**: Pending
@@ -80,7 +52,3 @@
 - **Status**: Pending
 - **Current**: Only documents hello/version/self-update
 - **Needed**: Document full movie management feature set
-
-## ✅ Completed Suggestions
-
-_(None yet — no code suggestions have been implemented so far. Only documentation updates: readm.txt milestone marker updated.)_
