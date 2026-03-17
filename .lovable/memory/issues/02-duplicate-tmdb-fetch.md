@@ -2,7 +2,8 @@
 
 > **Status**: Open  
 > **Severity**: Low (code quality)  
-> **Files**: `cmd/movie_scan.go`, `cmd/movie_search.go`, `cmd/movie_info.go`
+> **Files**: `cmd/movie_scan.go`, `cmd/movie_search.go`, `cmd/movie_info.go`  
+> **Iteration**: 0 (not yet fixed)
 
 ## Root Cause
 

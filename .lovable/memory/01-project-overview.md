@@ -47,10 +47,11 @@ mahin
 ## Important Notes for AI
 
 - **This is NOT a web project** — no `package.json`, no dev server, no preview
-- Build errors in Lovable are expected and can be ignored
+- Build errors in Lovable (`no package.json found`, `no command found for task "dev"`) are **expected** and can be ignored
 - All file operations require a real OS/terminal to test
 - Full specification lives in `SPEC.md` at project root
 - Milestone markers use `readm.txt` format: `let's start now {date} {time Malaysia}`
+- `.gitignore` cannot be created in Lovable environment — must be added manually
 
 ## File Counts (as of 17-Mar-2026)
 
@@ -60,3 +61,10 @@ mahin
 - `db/` — 1 file (SQLite schema + CRUD)
 - `updater/` — 1 file (git self-update)
 - `version/` — 1 file (build-time vars)
+
+## Session History (17-Mar-2026)
+
+- Updated `readm.txt` with milestone marker
+- Attempted `.gitignore` creation (blocked by environment)
+- No code bugs fixed yet — all 3 issues remain open
+- Memory files consolidated and updated

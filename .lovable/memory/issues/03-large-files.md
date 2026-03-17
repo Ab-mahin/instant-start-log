@@ -2,7 +2,8 @@
 
 > **Status**: Open  
 > **Severity**: Low (maintainability)  
-> **Files**: `cmd/movie_move.go` (348 lines), `db/sqlite.go` (452 lines)
+> **Files**: `cmd/movie_move.go` (348 lines), `db/sqlite.go` (452 lines)  
+> **Iteration**: 0 (not yet fixed)
 
 ## Root Cause
 
@@ -31,6 +32,7 @@ Features were added incrementally without splitting files at natural boundaries.
 
 - Split files at natural module boundaries early
 - One "concern" per file: schema, queries per entity, helpers
+- Target ~200 lines max per file
 
 ## What Not to Repeat
 

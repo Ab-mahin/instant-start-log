@@ -6,19 +6,35 @@
 
 ### 1. Fix timestamp bug in move-log.json
 - **Status**: Pending
-- **File**: `cmd/movie_move.go` line 346
+- **File**: `cmd/movie_move.go` line 345-346
 - **Issue**: `"timestamp":"now"` is a hardcoded string, not an actual timestamp
-- **Fix**: Use `time.Now().Format(time.RFC3339)`
+- **Fix**: Replace `"now"` with `time.Now().Format(time.RFC3339)` and add `"time"` to imports
+- **See**: `issues/01-timestamp-bug.md`
 
 ### 2. Add .gitignore
-- **Status**: Pending
+- **Status**: Attempted — file is read-only in Lovable environment
+- **Action**: Must be created manually in local repo
 - **Content needed**:
   ```
+  # Binaries
   mahin
   mahin.exe
   mahin-darwin-*
+  mahin-cli-v1
   *.exe
+  *.o
+  *.a
+  *.so
+  *.dylib
+  
+  # Build & Runtime
   movie-cli-output/
+  
+  # OS/IDE
+  .DS_Store
+  Thumbs.db
+  .idea/
+  .vscode/
   ```
 
 ## 🟡 Medium Priority
@@ -30,12 +46,14 @@
 
 ### 4. Refactor large files
 - **Status**: Pending
+- **See**: `issues/03-large-files.md`
 - **Targets**:
   - `cmd/movie_move.go` (348 lines) → split prompts/helpers into `cmd/movie_move_helpers.go`
   - `db/sqlite.go` (452 lines) → split into `db/schema.go`, `db/media.go`, `db/config.go`, `db/history.go`
 
 ### 5. Extract shared TMDb fetch logic
 - **Status**: Pending
+- **See**: `issues/02-duplicate-tmdb-fetch.md`
 - **Context**: `scan`, `search`, and `info` all have duplicate code for fetching movie/TV details + credits
 - **Solution**: Use `fetchMovieDetails()` and `fetchTVDetails()` from `movie_info.go` everywhere
 
@@ -65,4 +83,4 @@
 
 ## ✅ Completed Suggestions
 
-_(None yet — move items here as they're implemented)_
+_(None yet — no code suggestions have been implemented so far. Only documentation updates: readm.txt milestone marker updated.)_
