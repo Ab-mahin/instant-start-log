@@ -125,73 +125,10 @@ func runMovieSearch(cmd *cobra.Command, args []string) {
 
 	if selected.MediaType == "movie" || selected.MediaType == "" {
 		m.Type = "movie"
-
-		// Get movie details + credits
-		details, err := client.GetMovieDetails(selected.ID)
-		if err == nil {
-			m.ImdbID = details.ImdbID
-			m.Title = details.Title
-			genres := make([]string, len(details.Genres))
-			for i, g := range details.Genres {
-				genres[i] = g.Name
-			}
-			m.Genre = strings.Join(genres, ", ")
-		}
-
-		credits, err := client.GetMovieCredits(selected.ID)
-		if err == nil {
-			directors := []string{}
-			for _, c := range credits.Crew {
-				if c.Job == "Director" {
-					directors = append(directors, c.Name)
-				}
-			}
-			m.Director = strings.Join(directors, ", ")
-
-			castNames := []string{}
-			for i, c := range credits.Cast {
-				if i >= 10 {
-					break
-				}
-				castNames = append(castNames, c.Name)
-			}
-			m.CastList = strings.Join(castNames, ", ")
-		}
+		fetchMovieDetails(client, selected.ID, m)
 	} else if selected.MediaType == "tv" {
 		m.Type = "tv"
-
-		details, err := client.GetTVDetails(selected.ID)
-		if err == nil {
-			m.Title = details.Name
-			genres := make([]string, len(details.Genres))
-			for i, g := range details.Genres {
-				genres[i] = g.Name
-			}
-			m.Genre = strings.Join(genres, ", ")
-		}
-
-		credits, err := client.GetTVCredits(selected.ID)
-		if err == nil {
-			directors := []string{}
-			for _, c := range credits.Crew {
-				if c.Job == "Director" || c.Job == "Executive Producer" {
-					directors = append(directors, c.Name)
-				}
-			}
-			if len(directors) > 5 {
-				directors = directors[:5]
-			}
-			m.Director = strings.Join(directors, ", ")
-
-			castNames := []string{}
-			for i, c := range credits.Cast {
-				if i >= 10 {
-					break
-				}
-				castNames = append(castNames, c.Name)
-			}
-			m.CastList = strings.Join(castNames, ", ")
-		}
+		fetchTVDetails(client, selected.ID, m)
 	}
 
 	// Download thumbnail
