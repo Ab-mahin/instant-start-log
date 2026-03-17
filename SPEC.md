@@ -56,9 +56,10 @@ mahin-cli-v1/
 │   ├── movie_scan.go          # mahin movie scan [folder]
 │   ├── movie_ls.go            # mahin movie ls
 │   ├── movie_search.go        # mahin movie search <name>
-│   ├── movie_info.go          # mahin movie info <id|title>
+│   ├── movie_info.go          # mahin movie info <id|title> + shared fetchMovieDetails/fetchTVDetails
 │   ├── movie_suggest.go       # mahin movie suggest [N]
-│   ├── movie_move.go          # mahin movie move [directory]
+│   ├── movie_move.go          # mahin movie move [directory] (main flow)
+│   ├── movie_move_helpers.go  # Move helpers: promptSourceDirectory, promptDestination, listVideoFiles, humanSize, expandHome, saveHistoryLog
 │   ├── movie_rename.go        # mahin movie rename
 │   ├── movie_undo.go          # mahin movie undo
 │   ├── movie_play.go          # mahin movie play <id>
@@ -69,11 +70,18 @@ mahin-cli-v1/
 ├── tmdb/
 │   └── client.go              # TMDb API client (search, details, credits, posters, trending)
 ├── db/
-│   └── sqlite.go              # SQLite database: schema, migrations, CRUD operations
+│   ├── db.go                  # DB struct, Open(), migrate() (schema + defaults)
+│   ├── media.go               # Media struct, all CRUD methods, scanMediaRows, TopGenres
+│   ├── config.go              # GetConfig, SetConfig
+│   ├── history.go             # MoveRecord, InsertMoveHistory, GetLastMove, MarkMoveUndone, InsertScanHistory
+│   └── helpers.go             # splitCSV, split, indexOf, trim
 ├── updater/
 │   └── updater.go             # git-based self-update logic
 ├── version/
 │   └── version.go             # Build-time version variables (ldflags)
+├── spec/
+│   ├── 01-app/                # Application specs and coding guidelines
+│   └── 02-app/issues/         # Issue write-ups (root cause, fix, prevention)
 ├── Makefile                   # Build targets
 ├── build.ps1                  # PowerShell build + deploy script
 ├── go.mod
