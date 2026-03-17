@@ -156,21 +156,7 @@ func runMovieInfo(cmd *cobra.Command, args []string) {
 	fmt.Println()
 	fmt.Println("✅ Saved to your library!")
 	fmt.Println()
-	printMediaDetail(&db.Media{
-		Title:       m.Title,
-		CleanTitle:  m.CleanTitle,
-		Year:        m.Year,
-		Type:        m.Type,
-		TmdbID:      m.TmdbID,
-		ImdbID:      m.ImdbID,
-		TmdbRating:  m.TmdbRating,
-		Popularity:  m.Popularity,
-		Genre:       m.Genre,
-		Director:    m.Director,
-		CastList:    m.CastList,
-		Description: m.Description,
-		ThumbnailPath: m.ThumbnailPath,
-	})
+	printMediaDetail(m)
 }
 
 // pickBestMatch finds the best match from search results.
