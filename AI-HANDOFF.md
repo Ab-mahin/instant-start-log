@@ -136,10 +136,10 @@ mahin-cli-v1/
 ```
 
 ### File Count Summary
-- `cmd/` — 15 Go files (root + hello + version + update + movie parent + 10 subcommands + move_helpers + resolve)
+- `cmd/` — 16 Go files (root + hello + version + update + movie parent + 11 subcommands + move_helpers + resolve)
 - `cleaner/` — 1 file
 - `tmdb/` — 1 file
-- `db/` — 5 files (db.go, media.go, config.go, history.go, helpers.go)
+- `db/` — 7 files (db.go, media.go, config.go, history.go, helpers.go, tags.go, errors.go)
 - `updater/` — 1 file
 - `version/` — 1 file
 
