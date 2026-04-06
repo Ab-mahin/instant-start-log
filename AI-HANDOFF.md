@@ -557,6 +557,14 @@ Thumbs.db
 - Updated `README.md` based on project state
 - Created this `AI-HANDOFF.md` file
 
+### Session 8: Tag Command Implementation (06-Apr-2026)
+- Implemented `movie tag` command with 3 subcommands: `add`, `remove`, `list`
+- Created `db/tags.go` — DB layer: `AddTag`, `RemoveTag`, `ListTagsByMedia`, `ListAllTags`
+- Created `db/errors.go` — Sentinel error `ErrTagNotFound`
+- Created `cmd/movie_tag.go` — Cobra commands using shared `resolveMediaByQuery`
+- Registered `movieTagCmd` in `cmd/movie.go`
+- Uses existing `tags` table (was previously created but unused)
+
 ---
 
 ## 13. Memory & Documentation System
