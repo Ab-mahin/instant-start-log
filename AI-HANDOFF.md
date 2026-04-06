@@ -290,7 +290,7 @@ CREATE TABLE IF NOT EXISTS scan_history (
 );
 ```
 
-### Table: `tags` — User-defined tags (⚠️ table exists, commands NOT YET implemented)
+### Table: `tags` — User-defined tags ✅ (commands implemented: tag add/remove/list)
 ```sql
 CREATE TABLE IF NOT EXISTS tags (
     id         INTEGER PRIMARY KEY AUTOINCREMENT,
