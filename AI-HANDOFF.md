@@ -205,11 +205,15 @@ mahin
     │                          #   - macOS: open
     │                          #   - Windows: start
     │                          #   - Linux: xdg-open
-    └── stats                  # Library statistics:
-                               #   - Total movies vs TV shows
-                               #   - Average TMDb/IMDb ratings
-                               #   - Top genres with bar chart
-                               #   - Recently added items
+    ├── stats                  # Library statistics:
+    │                          #   - Total movies vs TV shows
+    │                          #   - Average TMDb/IMDb ratings
+    │                          #   - Top genres with bar chart
+    │                          #   - Recently added items
+    └── tag                    # Manage tags on media items:
+        ├── tag add <id|title> <tag>    # Add a tag (duplicate-safe via UNIQUE constraint)
+        ├── tag remove <id|title> <tag> # Remove a tag
+        └── tag list [id|title]         # List tags for a media item, or all tags
 ```
 
 ---
