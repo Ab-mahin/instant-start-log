@@ -477,7 +477,6 @@ All 8 issues found during full codebase audit and fixed:
 ### 🟡 Missing Features
 | Feature | Notes |
 |---------|-------|
-| `movie tag` command | `tags` table exists in DB but no commands use it. Needs: `tag add <id> <tag>`, `tag remove <id> <tag>`, `tag list [id]` |
 | `DiscoverByGenre` TMDb method | Method exists in `tmdb/client.go` but unused by any command |
 | Per-media JSON metadata files | Directories exist (`json/movie/`, `json/tv/`) but files are never written |
 | `.gitignore` file | Must be created manually (Lovable environment limitation) |
