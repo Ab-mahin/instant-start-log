@@ -136,10 +136,10 @@ mahin-cli-v1/
 ```
 
 ### File Count Summary
-- `cmd/` — 15 Go files (root + hello + version + update + movie parent + 10 subcommands + move_helpers + resolve)
+- `cmd/` — 16 Go files (root + hello + version + update + movie parent + 11 subcommands + move_helpers + resolve)
 - `cleaner/` — 1 file
 - `tmdb/` — 1 file
-- `db/` — 5 files (db.go, media.go, config.go, history.go, helpers.go)
+- `db/` — 7 files (db.go, media.go, config.go, history.go, helpers.go, tags.go, errors.go)
 - `updater/` — 1 file
 - `version/` — 1 file
 
@@ -205,11 +205,15 @@ mahin
     │                          #   - macOS: open
     │                          #   - Windows: start
     │                          #   - Linux: xdg-open
-    └── stats                  # Library statistics:
-                               #   - Total movies vs TV shows
-                               #   - Average TMDb/IMDb ratings
-                               #   - Top genres with bar chart
-                               #   - Recently added items
+    ├── stats                  # Library statistics:
+    │                          #   - Total movies vs TV shows
+    │                          #   - Average TMDb/IMDb ratings
+    │                          #   - Top genres with bar chart
+    │                          #   - Recently added items
+    └── tag                    # Manage tags on media items:
+        ├── tag add <id|title> <tag>    # Add a tag (duplicate-safe via UNIQUE constraint)
+        ├── tag remove <id|title> <tag> # Remove a tag
+        └── tag list [id|title]         # List tags for a media item, or all tags
 ```
 
 ---
@@ -286,7 +290,7 @@ CREATE TABLE IF NOT EXISTS scan_history (
 );
 ```
 
-### Table: `tags` — User-defined tags (⚠️ table exists, commands NOT YET implemented)
+### Table: `tags` — User-defined tags ✅ (commands implemented: tag add/remove/list)
 ```sql
 CREATE TABLE IF NOT EXISTS tags (
     id         INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -473,7 +477,6 @@ All 8 issues found during full codebase audit and fixed:
 ### 🟡 Missing Features
 | Feature | Notes |
 |---------|-------|
-| `movie tag` command | `tags` table exists in DB but no commands use it. Needs: `tag add <id> <tag>`, `tag remove <id> <tag>`, `tag list [id]` |
 | `DiscoverByGenre` TMDb method | Method exists in `tmdb/client.go` but unused by any command |
 | Per-media JSON metadata files | Directories exist (`json/movie/`, `json/tv/`) but files are never written |
 | `.gitignore` file | Must be created manually (Lovable environment limitation) |
@@ -553,6 +556,14 @@ Thumbs.db
 - Updated `readm.txt` with new milestone markers
 - Updated `README.md` based on project state
 - Created this `AI-HANDOFF.md` file
+
+### Session 8: Tag Command Implementation (06-Apr-2026)
+- Implemented `movie tag` command with 3 subcommands: `add`, `remove`, `list`
+- Created `db/tags.go` — DB layer: `AddTag`, `RemoveTag`, `ListTagsByMedia`, `ListAllTags`
+- Created `db/errors.go` — Sentinel error `ErrTagNotFound`
+- Created `cmd/movie_tag.go` — Cobra commands using shared `resolveMediaByQuery`
+- Registered `movieTagCmd` in `cmd/movie.go`
+- Uses existing `tags` table (was previously created but unused)
 
 ---
 
