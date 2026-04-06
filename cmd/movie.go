@@ -24,5 +24,6 @@ func init() {
 		movieStatsCmd,
 		movieRenameCmd,
 		movieConfigCmd,
+		movieTagCmd,
 	)
 }
